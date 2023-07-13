@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         NWUE
 // @namespace    https://github.com/ChizhaoEngine/NWUE
-// @version      0.1.6.230713
+// @version      0.1.7
 // @description  你猜猜看这是干什么的
 // @author       池沼动力
 // @license      CC BY-NC-ND 4.0
@@ -51,7 +51,7 @@
     if (window.location.href.includes('jwgl.nwu.edu.cn/jwglxt/xsxk/zzxkyzb_cxZzxkYzbIndex.html')) {
 
         let type = '体育分项';
-        // 还没做完，选课系统就关了，sb
+        // 还没做完，选课系统就关了，操蛋，先咕咕了
         // window.addEventListener('load', function () {
         //     if (loadList(type) === true) {
         //         loadMoreList();
@@ -167,23 +167,38 @@
                         onloadText.innerHTML = '[NWUE] 查询成功';
                         // 处理相应数据
                         let json = JSON.parse(response.responseText);
-                        let result = [];
+                        let result = { 'grades': [], 'conclude': { 'classSum': 0, 'gpa': 0} };
+                        // let result.grades = [];
+                        // 计算学分总和和绩点总和
+                        let creditsCac =0;
+                        let gpaCac = 0;
                         for (let i = 0; i < json.items.length; i++) {
                             //没成绩就是没修的课
                             if (json.items[i].cj != null) {
-                                result.push({
+                                result.grades.push({
                                     year: json.items[i].cxxnmc,
                                     term: json.items[i].cxxqmc,
                                     classNum: json.items[i].kch,
                                     className: json.items[i].kcmc.split("<br>")[0],
                                     xuefen: json.items[i].xf,
                                     grade: json.items[i].cj,
-                                    jidian: json.items[i].jd
+                                    jidian: json.items[i].jd,
+                                    xuefenJidian: (json.items[i].xf * 10) * (json.items[i].jd * 10) / 100
                                 });
-
+                                // 学分累加
+                                creditsCac += json.items[i].xf*10;
+                                // 绩点累加
+                                gpaCac += (json.items[i].xf * 10) * (json.items[i].jd * 10) / 100;
                             }
+                            // 仍然没有找到女朋友的希望
                         }
-                        // console.log(result);
+                        // 总课程数
+                        result.conclude.classSum = result.grades.length;
+                        // 加权绩点
+                        result.conclude.gpa = gpaCac/ (creditsCac/10);
+                        // 学分和
+                        // result.conclude.creditsSum = ;
+                        // console.log(result.grades);
 
                         // 生成表格
                         let rowHTML = `
@@ -196,21 +211,22 @@
                         <th>学分</th>
                         <th>成绩</th>
                         <th>绩点</th>
+                        <th>学分绩点</th>
                     </tr>
                 </thead>
                 <tbody>
                 </tbody>
                 `;
-                        let element = document.createElement('table');
-                        element.id = 'sb250';
-                        element.className = 'sbxxw';
-                        element.innerHTML = rowHTML;
-                        document.getElementById('innerContainer').appendChild(element);
+                        let table = document.createElement('table');
+                        table.id = 'sb250';
+                        table.className = 'sbxxw';
+                        table.innerHTML = rowHTML;
+                        document.getElementById('innerContainer').appendChild(table);
 
-                        let table = document.getElementById("sb250");
-                        for (let i = 0; i < result.length; i++) {
+                        // let table = document.getElementById("sb250");
+                        for (let i = 0; i < result.grades.length; i++) {
                             let row = table.insertRow(i + 1);
-                            let rowData = result[i];
+                            let rowData = result.grades[i];
 
                             let yearCell = row.insertCell(0);
                             yearCell.innerHTML = rowData.year;
@@ -232,14 +248,22 @@
 
                             let gpaCell = row.insertCell(6);
                             gpaCell.innerHTML = rowData.jidian;
+
+                            let creditsGpaCell = row.insertCell(7);
+                            creditsGpaCell.innerHTML =rowData.xuefenJidian;
+                            
                         }
+                        let sumEle = document.createElement('p')
+                        sumEle.innerHTML = `共${result.conclude.classSum}门课程，加权绩点为${result.conclude.gpa}`;
+                        document.getElementById('innerContainer').appendChild(sumEle);
+
                     } else {
-                        onloadText.innerHTML = '[NWUE] 返回异常：'+ response.status;
+                        onloadText.innerHTML = '[NWUE] 返回异常：' + response.status;
                     }
 
                 },
                 onerror: function (error) {
-                    onloadText.innerHTML = '[NWUE] 发送请求失败：'+ error.message;
+                    onloadText.innerHTML = '[NWUE] 发送请求失败：' + error.message;
 
                 }
             });
