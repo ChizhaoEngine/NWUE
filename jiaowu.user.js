@@ -16,8 +16,8 @@
 // @grant        GM.setClipboard
 // @grant        GM_addStyle
 // @connect      *jwgl.nwu.edu.cn*
-// @updateURL    https://github.com/ChizhaoEngine/NWUE/raw/main/jiaowu.user.js
-// @downloadURL  https://github.com/ChizhaoEngine/NWUE/raw/main/jiaowu.user.js
+// @updateURL    https://ghproxy.homeboyc.cn/https://github.com/ChizhaoEngine/NWUE/raw/main/jiaowu.user.js
+// @downloadURL  https://ghproxy.homeboyc.cn/https://github.com/ChizhaoEngine/NWUE/raw/main/jiaowu.user.js
 
 
 
